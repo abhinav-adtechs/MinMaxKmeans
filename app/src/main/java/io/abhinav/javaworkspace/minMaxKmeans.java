@@ -5,12 +5,12 @@ import java.util.Arrays;
 
 public class minMaxKmeans {
 
-    private static final int N = 250 ; /*NUMBER OF DATA POINTS*/
-    private static final int M = 7; /*NUMBER OF CLUSTERS*/
+    private static final int N = 20 ; /*NUMBER OF DATA POINTS*/
+    private static final int M = 3; /*NUMBER OF CLUSTERS*/
 
-    private static int t = 0, tMax ;
+    private static int t = 0, tMax = 50 ;
 
-    private static double inputDataSet[] = new double[N] ;
+    private static double inputDataSet[]  ;
     private static boolean empty = false ;
 
     private static double p, pInit = 0, pStep = 0.01, pMax = 0.5 ;
@@ -26,7 +26,7 @@ public class minMaxKmeans {
 
     private static double variance[] = new double[M] ; /*Variance of each cluster*/
 
-    private static double minimizationStepMin = 0 ;
+    private static double minimizationStepMin = 99999 ;
 
     private static final double beta = 0.1 ;
 
@@ -40,7 +40,17 @@ public class minMaxKmeans {
     }
 
     private static void init() {
+
+        inputDataSet = new double[]{5, 100, 20, 7, 6,
+                21, 77, 33, 61, 99,
+                12, 14, 43, 55, 27,
+                55, 77, 20, 30, 0 };
+
         Arrays.fill(w, 1/M);
+
+        m = new double[]{ 10, 20, 90} ;
+
+        Arrays.fill(variance, 0);
 
         /*Initilize cluster centers*/
         /*Initilize variance matrix*/
@@ -66,8 +76,7 @@ public class minMaxKmeans {
             updateCenters() ;
 
             if(p < pMax && !empty){
-
-                /*Steps 26 and 27*/
+                storeCurrentState() ;
                 p = p + pStep ;
             }
 
@@ -75,6 +84,15 @@ public class minMaxKmeans {
 
 
         }while(loopCondition()) ;
+    }
+
+    private static void storeCurrentState() {
+        for (int k = 0; k < M; k++) {
+            for (int i = 0; i < N; i++) {
+                delta[i][k] = del[i][k] ;
+            }
+            W[k] = w[k] ;
+        }
     }
 
     private static boolean ifSingletonClusters() {
@@ -111,7 +129,7 @@ public class minMaxKmeans {
 
         for (int kdash = 0; kdash < M; kdash++) {
             temVar = (Math.pow(w[kdash], p))*(Math.pow((Math.abs(inputDataSet[i] - m[kdash])), 2)) ;
-            if(minimizationStepMin > temVar){
+            if(temVar < minimizationStepMin){
                 minimizationStepMin = temVar ;
                 minKdash = kdash ;
             }
@@ -189,13 +207,14 @@ public class minMaxKmeans {
     private static boolean loopCondition() {
         /*Step 33*/
 
-        return (false || t>= tMax) ;
+        return (t <= tMax) ;
     }
 
     private static void printResults() {
         for (int i = 1; i < N; i++) {
+                System.out.println("DataPoint: " + inputDataSet[i] );
             for (int k = 0; k < M ; k++) {
-                System.out.println("i:" + i + " k:" + k + " custerId:" + del[i][k] + " center:" + m[k]);
+                System.out.println("clusterPoint: " + k + " Variance: " + variance[k] + " Center: " + m[k] + " isCluster: " + del[i][k] );
             }
         }
     }
