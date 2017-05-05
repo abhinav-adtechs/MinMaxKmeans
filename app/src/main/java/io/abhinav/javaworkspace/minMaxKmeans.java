@@ -21,8 +21,8 @@ public class minMaxKmeans {
     private static double w[] = new double[M] ; /*New Weights*/
     private static double W[] = new double[M] ; /*Old Weights*/
 
-    private static int del[][] = new int[N][M] ; /*Final Cluster Assignment*/
-    private static int delta[][] = new int[N][M] ; /*Final Cluster Assignments Temporary*/
+    private static int del[][] = new int[N][M] ; /*Cluster Assignment*/
+    private static int delta[][] = new int[N][M] ; /*Cluster Assignments Temporary*/
 
     private static double variance[] = new double[M] ; /*Variance of each cluster*/
 
@@ -51,6 +51,13 @@ public class minMaxKmeans {
         m = new double[]{ 10, 20, 90} ;
 
         Arrays.fill(variance, 0);
+
+        for (int k = 0; k < M; k++) {
+            for (int i = 0; i < N; i++) {
+                delta[i][k] = 0 ;
+            }
+        }
+
 
         /*Initilize cluster centers*/
         /*Initilize variance matrix*/
@@ -126,6 +133,7 @@ public class minMaxKmeans {
     private static int minimizationStep(int i) {
         double temVar ;
         int minKdash = 0;
+        minimizationStepMin = 99999 ;
 
         for (int kdash = 0; kdash < M; kdash++) {
             temVar = (Math.pow(w[kdash], p))*(Math.pow((Math.abs(inputDataSet[i] - m[kdash])), 2)) ;
@@ -150,23 +158,28 @@ public class minMaxKmeans {
     }
 
     private static void updateCenters() {
-        for (int k=0, i=0; k < M; k++, i++) {
-            m[k] = returnSummation(del[i], inputDataSet) / returnSummation(del[i]) ;
+        for (int k=0; k < M; k++) {
+            try{
+                m[k] = (returnSummation(del, inputDataSet, k))/ (returnSummation(del, k)) ;
+            }catch (ArithmeticException ae){
+                m[k] = 0 ;
+                //ae.printStackTrace();
+            }
         }
     }
 
-    private static int returnSummation(int[] inp){
+    private static int returnSummation(int[][] inp, int k){
         int sumTemp = 0;
         for (int i = 0; i < inp.length; i++) {
-            sumTemp += inp[i] ;
+            sumTemp += inp[i][k] ;
         }
         return sumTemp ;
     }
 
-    private static int returnSummation(int[] inp, double[] inp2){
+    private static int returnSummation(int[][] inp, double[] inp2, int k){
         int sumTemp = 0;
         for (int i = 0; i < inp.length; i++) {
-            sumTemp += inp[i]*inp2[i] ;
+            sumTemp += inp[i][k]*inp2[i] ;
         }
         return sumTemp ;
     }
@@ -214,7 +227,7 @@ public class minMaxKmeans {
         for (int i = 1; i < N; i++) {
                 System.out.println("DataPoint: " + inputDataSet[i] );
             for (int k = 0; k < M ; k++) {
-                System.out.println("clusterPoint: " + k + " Variance: " + variance[k] + " Center: " + m[k] + " isCluster: " + del[i][k] );
+                System.out.println("clusterPoint: " + k +  " Center: " + m[k] + " isCluster: " + del[i][k] );
             }
         }
     }
